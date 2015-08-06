@@ -20,13 +20,25 @@ class Contact
   @@contacts = []
   class << self
     
-    # def add_phone(phone_label,phone_number,email)
-    #   FasterCSV.open('contacts.csv','w') do |csv|
-    #     FasterCSV.foreach('contacts.csv') do |row|
-    #       csv << (row + [phone_number])
-    #     end
-    #   end
-    # end
+    def add_phone(phone_label,phone_number,email)
+    	phone = Hash.new
+		CSV.foreach('contacts.csv') do |row|
+			if row[1] == email
+  				phone[phone_label] = phone_number
+  			end
+		end
+		contact_array = CSV.read('contacts.csv')
+		contact_array.each do |contact|
+			if contact[1] == email
+				contact << phone.shift
+			end
+		end
+		CSV.open('contacts.csv', 'w') do |csv_object|
+  			contact_array.each do |row_array|
+    			csv_object << row_array
+  			end
+  		end
+    end
 
 
 
@@ -50,10 +62,7 @@ class Contact
       # TODO: Will find and return contacts that contain the term in the first name, last name or email
       puts "The following contacts match your term: "
       contacts = CSV.read('contacts.csv')
-      # contacts[0]
-      # binding.pry
       contacts.each do |name,email|
-        # binding.pry
         if name.include?(term) || email.include?(term)
           puts " #{name}, #{email}"
         end
@@ -88,3 +97,5 @@ class Contact
   end
  
 end
+
+

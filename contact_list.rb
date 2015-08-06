@@ -1,5 +1,4 @@
-require_relative 'contact'
-require_relative 'contact_database'
+require_relative 'setup'
 # require 'pry'
 # TODO: Implement command line interaction
 # This should be the only file where you use puts and gets
@@ -11,10 +10,10 @@ def phone(email)
 	phone_label = STDIN.gets.chomp
 	puts "please enter your phone number:"
 	phone_number = STDIN.gets.chomp
-	Contact.add_phone(phone_label,phone_number,email)
-
+	Contact.where(email:email).each {|contact| @id = contact.id}
+	contact = Contact.find(@id)
+	contact.phones.create(phone_label: phone_label,phone_number: phone_number)
 end
-
 
 if command == "help"
 	puts "Here is a list of availiable commands:
@@ -23,8 +22,6 @@ if command == "help"
   show - Show s contact 
   find - Find a contact"
 
-# puts "Enter your command please: "
-# new_command = STDIN.gets.chomp
 
 elsif command == "new"
 	puts "Add phone to exist contact?[y/n]"
@@ -36,9 +33,11 @@ elsif command == "new"
 	elsif add_phone == "n"
 		puts "please enter the email of the new contact: "
 		email = STDIN.gets.chomp
-		puts "please enter the name of the new contact: "
-		name = STDIN.gets.chomp
-		Contact.create(name,email)
+		puts "please enter the first name of the new contact: "
+		firstname = STDIN.gets.chomp
+		puts "please enter the last name of the new contact: "
+		lastname = STDIN.gets.chomp
+		Contact.create(firstname: firstname,lastname: lastname,email: email)
 		puts "Add phone number?[y/n]"
 		new_phone = STDIN.gets.chomp
 		if new_phone == "y"
@@ -47,15 +46,18 @@ elsif command == "new"
 	end
 
 elsif command == "list"
-	Contact.all
+	Contact.all.each {|contact| puts "#{contact.firstname} #{contact.lastname} has email: #{contact.email}"}
 
-elsif command == "show" && detail.gsub(/[^\d]/,'').to_i > 0
-	
-	# id = new_command.gsub(/[^\d]/,'').to_i
-	Contact.show(detail.to_i)
+elsif command == "show" && detail.is_a?(String)
+	Contact.where(firstname:detail).each {|contact| puts "##{contact.id} #{contact.firstname} #{contact.lastname} with #{contact.email}"}
 elsif command == "find"
-	# binding.pry
-	Contact.find(detail)
+	contact = Contact.find(detail)
+	puts "##{contact.id} is #{contact.firstname} #{contact.lastname}, #{contact.email}"
+elsif command == "delete"
+	puts "enter the id which you want to delete: "
+	id = STDIN.gets.chomp.to_i
+	Contact.find(id).destroy
+	puts "contact ##{id} is deleted!"
 else
 	raise "Type 'help' for command list!"
 end
